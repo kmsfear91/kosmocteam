@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="survey">
+	<insert id="add" parameterType="survo">
+		insert into survey
+		values(survey_seq.nextVal, #{sub}, #{code}, sysdate)
+	</insert>
+
+	<!--
+	insert all
+	into surveycontent values('A', 1, '온다', 0)
+	into surveycontent values('B', 1, '안온다', 0)
+	into surveycontent values('C', 1, '모른다', 0)
+	select * from dual
+	-->
+
+	<insert id="addcontent" parameterType="java.util.List">
+		<selectKey keyProperty="id" resultType="int" order="BEFORE">
+			select survey_seq.currVal from dual
+		</selectKey>
+		<foreach collection="list" item="e" separator=" " open="insert all" close="select * from dual">
+			into surveycontent values(#{e.subtype}, #{id}, #{e.surveytitle}, 0)
+		</foreach>
+	</insert>
+
+	<select id="list" resultType="survo">
+		select num, sub, code, sdate, (select sum(surveycnt) from
+		surveycontent where num = subcode) surveytotal from survey group by
+		num, sub, code, sdate order by num desc
+	</select>
+
+	<resultMap type="survo" id="serveyView">
+		<id property="num" column="num" javaType="int" />
+		<result property="sub" column="sub" />
+		<result property="sdate" column="sdate" />
+		<collection property="survey" javaType="java.util.List"
+			ofType="subvo">
+			<result property="subtype" column="subtype" />
+			<result property="subcode" column="subcode" javaType="int" />
+			<result property="surveytitle" column="surveytitle" />
+			<result property="surveycnt" column="surveycnt"
+				javaType="int" />
+		</collection>
+	</resultMap>
+	<select id="adminDetail" parameterType="int"
+		resultMap="serveyView">
+		select s.num, s.sub, s.code, s.sdate, sc.subtype,
+		sc.subcode, sc.surveytitle, sc.surveycnt from survey s, surveycontent
+		sc where s.num = sc.subcode and s.num = #{num}
+	</select>
+
+	<update id="updateSurveyCnt" parameterType="subvo">
+		update surveycontent
+		set surveycnt = surveycnt + 1 where subtype = #{subtype} and subcode =
+		#{subcode}
+	</update>
+</mapper>

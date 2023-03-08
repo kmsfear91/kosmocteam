@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ksawon">
+	<resultMap type="deptvo" id="deptsawonResult">
+		<id property="deptno" column="deptno" javaType="int" />
+		<result property="dname" column="dname" />
+		<collection property="sawon" javaType="java.util.List" ofType="sawonvo">
+			<id property="sabun" column="sabun" javaType="int" />
+			<result property="saname" column="saname" />
+			<result property="sajob" column="sajob" />
+			<result property="sapay" column="sapay" />
+		</collection>
+	</resultMap>
+	<select id="deptList" parameterType="int" resultMap="deptsawonResult">
+		select s.sabun, s.saname, s.sajob, s.sapay, d.deptno,
+		d.dname from sawon s, dept d where d.deptno = s.deptno and d.deptno =
+		#{deptno}
+	</select>
+
+	<!-- ========= -->
+
+	<resultMap type="sawonvo" id="sawonsphoneResult">
+		<id property="sabun" column="sabun" javaType="int" />
+		<result property="saname" column="saname" />
+		<result property="sajob" column="sajob" />
+		<association property="sawonPhone" column="sabun" javaType="sphonevo">
+			<id property="pnum" column="pnum" javaType="int" />
+			<result property="pmodel" column="pmodel" />
+			<result property="phnum" column="phnum" />
+			<result property="pdate" column="pdate" />
+		</association>
+	</resultMap>
+	<select id="sawonList" resultMap="sawonsphoneResult">
+		select s.sabun, s.saname,
+		s.sajob, p.pnum, p.pmodel, p.phnum, p.pdate from sawon s, sawon_phone
+		p where s.sabun = p.pnum (+)
+	</select>
+</mapper>
+  

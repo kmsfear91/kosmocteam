@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="myboard">
+	<insert id="add" parameterType="bvo">
+		insert into mboard values(mboard_seq.nextVal, #{subject}, #{writer}, #{content}, #{reip}, sysdate)
+	</insert>
+	<select id="list" resultType="bvo">
+		select num, subject, writer, bdate from mboard order by 1 desc
+	</select>
+	<select id="detail" parameterType="int" resultType="bvo">
+		select num, subject, writer, content, reip, bdate from mboard where num = #{num}
+	</select>
+	<delete id="delete" parameterType="int">
+		delete from mboard where num = #{num}
+	</delete>
+	<update id="update" parameterType="bvo">
+		update mboard set subject = #{subject}, content = #{content} where num = #{num}
+	</update>
+</mapper>
+  

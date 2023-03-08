@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="member">
+	<insert id="add" parameterType="mvo">
+		insert into member
+		values(member_seq.nextVal, #{id}, #{pwd}, #{name}, #{age}, #{gender},
+		sysdate)
+	</insert>
+	<select id="idchk" parameterType="String" resultType="int">
+		select
+		count(*) from member where id = #{id}
+	</select>
+	<select id="login" parameterType="mvo" resultType="mvo">
+		select id,
+		name from member where id = #{id} and pwd = #{pwd}
+	</select>
+	<select id="listpage" parameterType="psvo" resultType="mvo">
+		select num,
+		<if test="searchValue == null and searchType ==null">
+			id, name,
+		</if>
+		<if test="searchValue != null and searchType !=null">
+			<choose>
+				<when test="searchType == 1">
+					<![CDATA[replace(id,#{searchValue},'<span style="color:orange">${searchValue}</span>') id, name,]]>
+				</when>
+				<when test="searchType == 2">
+					<![CDATA[id, replace(name,#{searchValue},'<span style="color:orange">${searchValue}</span>') name,]]>
+				</when>
+				<otherwise>
+					id, name,
+				</otherwise>
+			</choose>
+		</if>
+		age, gender from (select rownum r_num, a.* from (select * from
+		member
+		<if test="searchValue != null and searchType != null">
+			<where>
+				<choose>
+					<when test="searchType == 1">
+						id like '%' || #{searchValue} || '%'
+					</when>
+					<when test="searchType == 2">
+						name like '%' || #{searchValue} || '%'
+					</when>
+				</choose>
+			</where>
+		</if>
+		order by num desc) a) where r_num between #{begin} and #{end}
+	</select>
+	<select id="totalCount" parameterType="psvo" resultType="int">
+		select count(*) from member
+		<if test="searchValue != null and searchType !=null">
+			<where>
+				<choose>
+					<when test="searchType == 1">
+						id like '%' || #{searchValue} || '%'
+					</when>
+					<when test="searchType == 2">
+						name like '%' || #{searchValue} || '%'
+					</when>
+				</choose>
+			</where>
+		</if>
+	</select>
+
+	<!-- login loggin mapper -->
+	<insert id="logger_in" parameterType="lvo">
+		insert into myloginlog
+		values(myloginlog_seq.nextVal, #{idn}, #{reip}, #{uagent}, #{status},
+		sysdate)
+	</insert>
+
+	<!-- JSON Mapper -->
+	<select id="jsonDemo" parameterType="String" resultType="mvo">
+		select num, id, name, age, gender from member where id like '%' || #{id} || '%'
+	</select>
+
+	<select id="list" resultType="mvo">
+		select num, id, name, age, gender from member order by 1 desc
+	</select>
+</mapper>
